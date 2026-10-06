@@ -44,3 +44,45 @@ def seed_sample_command():
 def clear_sample_command():
     """Remove all SAMPLE communities."""
     click.echo(f"Removed {clear_samples()} sample communities.")
+
+
+@click.command("import-osm")
+@click.option("--dry-run", is_flag=True, help="Show what would be imported without saving anything.")
+@click.option("--broad", is_flag=True, help="Also include residential areas whose names look like subdivisions.")
+@click.option("--limit", type=int, default=None, help="Import at most this many records.")
+@click.option("--file", "file_path", type=click.Path(exists=True, dir_okay=False),
+              help="Read a saved Overpass JSON file instead of downloading.")
+@click.option("--save", "save_path", type=click.Path(dir_okay=False),
+              help="Save the downloaded Overpass response to this file.")
+@with_appcontext
+def import_osm_command(dry_run, broad, limit, file_path, save_path):
+    """Add OpenStreetMap candidates to the pending review queue."""
+    import json
+
+    from app.osm_import import OsmImportError, fetch_overpass, load_elements, run_import
+
+    try:
+        if file_path:
+            elements = load_elements(file_path)
+        else:
+            click.echo("Downloading from Overpass (this can take a few minutes)...")
+            elements, failed = fetch_overpass(broad=broad, progress=click.echo)
+            if failed:
+                click.echo(f"WARNING: {len(failed)} small area(s) could not be downloaded; "
+                           "re-run later to fill the gaps (items already imported are skipped).")
+                if not elements:
+                    raise click.ClickException("Nothing could be downloaded. Try again later.")
+            if save_path:
+                with open(save_path, "w", encoding="utf-8") as fh:
+                    json.dump({"elements": elements}, fh)
+                click.echo(f"Saved raw response to {save_path}")
+    except OsmImportError as err:
+        raise click.ClickException(str(err))
+
+    stats = run_import(elements, dry_run=dry_run, limit=limit)
+    verb = "Would create" if dry_run else "Created"
+    click.echo(f"Found {stats['found']} elements.")
+    click.echo(f"{verb} {stats['created']} pending submissions.")
+    click.echo(f"Already imported or submitted: {stats['duplicates']}.")
+    for reason, count in sorted(stats["skipped"].items()):
+        click.echo(f"Skipped {count}: {reason}.")

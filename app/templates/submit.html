@@ -17,6 +17,7 @@
         <p class="note">Submissions are reviewed by an admin before they appear on the map.</p>
       {% endif %}
       <p class="note warn">Only share boundaries and public facts. Never include gate codes, guard details, or residents' personal information.</p>
+      <p class="note">By submitting, you agree your contribution may be published under the Open Database License (ODbL). Draw shapes yourself or from open sources like OpenStreetMap; do not copy them from Google Maps or other sources that forbid it.</p>
 
       {% if errors %}
       <div class="errors" role="alert">
@@ -32,48 +33,8 @@
           <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
         </div>
 
-        <label>Name *
-          <input type="text" name="name" maxlength="200" required value="{{ values.get('name', '') }}">
-        </label>
-        <label>Other names
-          <input type="text" name="alt_names" maxlength="300" value="{{ values.get('alt_names', '') }}">
-        </label>
+        {% include "_community_fields.html" %}
 
-        <div class="row">
-          <label>City *
-            <select name="city" required>
-              <option value="">Choose…</option>
-              {% for c in cities %}<option value="{{ c }}" {{ 'selected' if values.get('city') == c }}>{{ c }}</option>{% endfor %}
-            </select>
-          </label>
-          <label>Barangay
-            <input type="text" name="barangay" maxlength="100" value="{{ values.get('barangay', '') }}">
-          </label>
-        </div>
-
-        <div class="row">
-          <label>Type *
-            <select name="community_type" required>
-              {% for key, label in type_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('community_type') == key }}>{{ label }}</option>{% endfor %}
-            </select>
-          </label>
-          <label>Gating status *
-            <select name="gating_status" required>
-              {% for key, label in gating_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('gating_status') == key }}>{{ label }}</option>{% endfor %}
-            </select>
-          </label>
-          <label>Entry points
-            <input type="number" name="entry_points" min="0" max="50" value="{{ values.get('entry_points', '') }}">
-          </label>
-        </div>
-
-        <label>Notes
-          <textarea name="notes" rows="3" maxlength="1000">{{ values.get('notes', '') }}</textarea>
-        </label>
-        <label>Source or evidence *
-          <input type="text" name="source" maxlength="500" required value="{{ values.get('source', '') }}"
-                 placeholder="Photo link, OSM link, or “I live here”">
-        </label>
         <label>Your contact (optional, never shown publicly)
           <input type="text" name="contact" maxlength="200" value="{{ values.get('contact', '') }}">
         </label>

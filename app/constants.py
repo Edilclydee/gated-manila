@@ -29,6 +29,8 @@ STATUS_PENDING = "pending"
 STATUS_APPROVED = "approved"
 STATUS_REJECTED = "rejected"
 STATUSES = [STATUS_PENDING, STATUS_APPROVED, STATUS_REJECTED]
+# A live community an admin has taken down (takedown requests, errors). Hidden from the public map.
+STATUS_UNPUBLISHED = "unpublished"
 
 # Only these fields may be proposed by contributors
 SUBMITTABLE_FIELDS = [

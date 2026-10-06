@@ -87,3 +87,11 @@ def test_cannot_edit_unapproved_or_missing_community(app):
     client = app.test_client()
     assert client.get(f"/submit?edit={pending.id}").status_code == 404
     assert client.get("/submit?edit=9999").status_code == 404
+
+
+def test_failed_submission_keeps_typed_values_cleanly(app, turnstile_ok):
+    resp = app.test_client().post("/submit", data=good_form(source=""))
+    assert resp.status_code == 400
+    html = resp.get_data(as_text=True)
+    assert 'value="Test Village"' in html
+    assert "['Test Village']" not in html

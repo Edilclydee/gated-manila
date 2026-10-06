@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Live communities · Gated Manila{% endblock %}
+{% block content %}
+<main class="page wide">
+  <h1>Live communities</h1>
+  <p class="note">Use “Unpublish” to remove an entry from the public map (errors, takedown requests). You can republish it later.</p>
+  {% if communities %}
+  <table class="table">
+    <thead><tr><th>#</th><th>Name</th><th>City</th><th>Gating</th><th>State</th><th></th></tr></thead>
+    <tbody>
+    {% for c in communities %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.city }}</td>
+        <td>{{ gating_labels.get(c.gating_status, c.gating_status) }}</td>
+        <td>{{ 'Public' if c.status == STATUS_APPROVED else 'Unpublished' }}</td>
+        <td>
+          <form method="post" class="inline-form"
+                action="{{ url_for('admin.unpublish' if c.status == STATUS_APPROVED else 'admin.republish', community_id=c.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-small">{{ 'Unpublish' if c.status == STATUS_APPROVED else 'Republish' }}</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="note">No communities yet.</p>
+  {% endif %}
+</main>
+{% endblock %}

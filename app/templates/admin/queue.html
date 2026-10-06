@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Review queue · Gated Manila{% endblock %}
+{% block content %}
+<main class="page wide">
+  <h1>Review queue</h1>
+  <div class="tabs">
+    {% for key, label in [('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')] %}
+      <a href="{{ url_for('admin.queue', status=key) }}" class="{{ 'active' if status == key }}">{{ label }} ({{ counts[key] }})</a>
+    {% endfor %}
+  </div>
+
+  {% if submissions %}
+  <table class="table">
+    <thead><tr><th>#</th><th>Kind</th><th>Name</th><th>City</th><th>Submitted (UTC)</th><th></th></tr></thead>
+    <tbody>
+    {% for s in submissions %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>{{ 'Edit' if s.community_id else ('OSM import' if s.contact == 'Imported from OpenStreetMap' else 'New') }}</td>
+        <td>{{ s.data.get('name') }}</td>
+        <td>{{ s.data.get('city') }}</td>
+        <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td><a href="{{ url_for('admin.review', submission_id=s.id) }}">{{ 'Review' if status == 'pending' else 'View' }}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="note">Nothing here.</p>
+  {% endif %}
+</main>
+{% endblock %}

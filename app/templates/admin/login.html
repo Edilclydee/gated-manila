@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Admin sign in · Gated Manila{% endblock %}
+{% block content %}
+<main class="page narrow">
+  <h1>Admin sign in</h1>
+  {% if error %}<div class="errors" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Username <input type="text" name="username" autocomplete="username" required autofocus></label>
+    <label>Password <input type="password" name="password" autocomplete="current-password" required></label>
+    <button type="submit" class="btn">Sign in</button>
+  </form>
+</main>
+{% endblock %}

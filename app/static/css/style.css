@@ -49,3 +49,34 @@ body { display: flex; flex-direction: column; }
 .btn:hover { background: #2f5a92; }
 #draw-map { height: 480px; border: 1px solid #b9c0ca; border-radius: 4px; }
 .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+
+/* Navigation extras */
+.topbar .nav { display: flex; gap: 0.5rem; align-items: center; }
+.nav-btn { background: transparent; color: #fff; border: 1px solid #6c8bb5; padding: 0.3rem 0.7rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
+.inline-form { display: inline; margin: 0; }
+
+/* Flash messages */
+.flashes { padding: 0.5rem 1rem 0; }
+.flash { padding: 0.5rem 0.8rem; border-radius: 4px; margin-bottom: 0.4rem; font-size: 0.9rem; }
+.flash-success { background: #e6f4ea; border: 1px solid #a8d5b5; }
+.flash-error { background: #fdecea; border: 1px solid #f1aeb5; }
+.flash-message { background: #eaf1fb; border: 1px solid #b6cdeb; }
+
+/* Admin pages */
+.page.narrow { max-width: 22rem; }
+.page.wide { max-width: 60rem; }
+.stack label { display: block; margin-bottom: 0.7rem; font-size: 0.9rem; font-weight: 600; }
+.stack input { display: block; width: 100%; box-sizing: border-box; margin-top: 0.2rem; padding: 0.4rem 0.5rem; font: inherit; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.tabs a { padding: 0.35rem 0.8rem; border-radius: 4px; background: #eef1f5; color: #1f3a5f; text-decoration: none; font-size: 0.9rem; }
+.tabs a.active { background: #1f3a5f; color: #fff; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table th, .table td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #e0e4ea; vertical-align: top; }
+.table tr.changed td { background: #fff7e0; }
+.h2 { font-size: 1.05rem; margin: 1rem 0 0.4rem; }
+.btn-row { display: flex; gap: 0.6rem; }
+.btn-reject { background: #a93226; }
+.btn-reject:hover { background: #c0392b; }
+.btn-small { padding: 0.25rem 0.6rem; font-size: 0.8rem; cursor: pointer; }
+.details dt { font-weight: 600; font-size: 0.85rem; margin-top: 0.4rem; }
+.details dd { margin: 0; font-size: 0.9rem; }

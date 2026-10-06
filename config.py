@@ -13,7 +13,13 @@ class Config:
 
     # Spam protection: max submissions per visitor (by IP address)
     SUBMIT_RATE_LIMIT = os.environ.get("SUBMIT_RATE_LIMIT", "5 per hour")
+    LOGIN_RATE_LIMIT = os.environ.get("LOGIN_RATE_LIMIT", "10 per 15 minutes")
     RATELIMIT_STORAGE_URI = "memory://"
+
+    # Session cookies. Set SESSION_COOKIE_SECURE=1 in production (HTTPS only).
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
 
     # Metro Manila view: center and zoom
     MAP_CENTER = (14.5995, 121.0244)

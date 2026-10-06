@@ -1,0 +1,43 @@
+{% set entry_points = values.get('entry_points') %}
+<label>Name *
+  <input type="text" name="name" maxlength="200" required value="{{ values.get('name') or '' }}">
+</label>
+<label>Other names
+  <input type="text" name="alt_names" maxlength="300" value="{{ values.get('alt_names') or '' }}">
+</label>
+
+<div class="row">
+  <label>City *
+    <select name="city" required>
+      <option value="">Choose…</option>
+      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if values.get('city') == c }}>{{ c }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Barangay
+    <input type="text" name="barangay" maxlength="100" value="{{ values.get('barangay') or '' }}">
+  </label>
+</div>
+
+<div class="row">
+  <label>Type *
+    <select name="community_type" required>
+      {% for key, label in type_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('community_type') == key }}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Gating status *
+    <select name="gating_status" required>
+      {% for key, label in gating_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('gating_status') == key }}>{{ label }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Entry points
+    <input type="number" name="entry_points" min="0" max="50" value="{{ '' if entry_points is none else entry_points }}">
+  </label>
+</div>
+
+<label>Notes
+  <textarea name="notes" rows="3" maxlength="1000">{{ values.get('notes') or '' }}</textarea>
+</label>
+<label>Source or evidence *
+  <input type="text" name="source" maxlength="500" required value="{{ values.get('source') or '' }}"
+         placeholder="Photo link, OSM link, or “I live here”">
+</label>

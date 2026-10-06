@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Review #{{ submission.id }} · Gated Manila{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+{% endblock %}
+
+{% block content %}
+<main class="submit-page">
+  <div class="submit-layout">
+    <section class="form-col">
+      <p><a href="{{ url_for('admin.queue') }}">← Back to queue</a></p>
+      <h1>Review submission #{{ submission.id }}</h1>
+      <p class="note">
+        {% if community %}Edit suggestion for <strong>{{ community.name }}</strong> (#{{ community.id }}){% else %}New community{% endif %}
+        · submitted {{ submission.created_at.strftime('%Y-%m-%d %H:%M') }} UTC
+        · status: <strong>{{ submission.status }}</strong>
+      </p>
+      {% if submission.contact %}<p class="note">Submitter contact (private): {{ submission.contact }}</p>{% endif %}
+
+      {% if community %}
+      <h2 class="h2">Changes</h2>
+      <table class="table diff">
+        <thead><tr><th>Field</th><th>Current</th><th>Proposed</th></tr></thead>
+        <tbody>
+        {% for label, old, new, changed in diffs %}
+          <tr class="{{ 'changed' if changed }}"><td>{{ label }}</td><td>{{ old }}</td><td>{{ new }}</td></tr>
+        {% endfor %}
+          <tr class="{{ 'changed' if shape_changed }}"><td>Shape</td><td colspan="2">{{ 'Changed (dashed blue = current, red = proposed)' if shape_changed else 'Unchanged' }}</td></tr>
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if errors %}
+      <div class="errors" role="alert">
+        <strong>Please fix the following:</strong>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+
+      {% if submission.status == 'pending' %}
+      <p class="note">You can correct any field or redraw the shape before approving.</p>
+      <form method="post" id="submit-form" action="{{ url_for('admin.approve', submission_id=submission.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="geometry" id="geometry" value="{{ initial_geometry }}">
+        {% include "_community_fields.html" %}
+        <label>Reviewer notes (internal; required when rejecting)
+          <textarea name="reviewer_notes" rows="2" maxlength="1000">{{ values.get('reviewer_notes') or '' }}</textarea>
+        </label>
+        <div class="btn-row">
+          <button type="submit" class="btn">Approve &amp; publish</button>
+          <button type="submit" class="btn btn-reject" formnovalidate data-skip-geometry
+                  formaction="{{ url_for('admin.reject', submission_id=submission.id) }}">Reject</button>
+        </div>
+      </form>
+      {% else %}
+      <input type="hidden" id="geometry" value="{{ initial_geometry }}">
+      <h2 class="h2">Submitted details</h2>
+      <dl class="details">
+        {% for key, label in field_labels.items() %}
+          <dt>{{ label }}</dt><dd>{{ values.get(key) if values.get(key) is not none else '' }}</dd>
+        {% endfor %}
+      </dl>
+      <p class="note">Reviewer notes: {{ submission.reviewer_notes or '—' }}</p>
+      {% endif %}
+    </section>
+
+    <section class="map-col">
+      <p class="note">Red = proposed shape{% if community %}; dashed blue = current shape{% endif %}. Grey = other live communities.</p>
+      <div id="draw-map"></div>
+      <p id="shape-status" class="note">No shape drawn yet.</p>
+    </section>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script>window.SUB = {{ page_config|tojson }};</script>
+<script src="{{ url_for('static', filename='js/submit.js') }}"></script>
+{% endblock %}

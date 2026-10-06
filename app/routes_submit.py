@@ -80,7 +80,7 @@ def submit():
         errors.append("Please complete the spam check and try again.")
 
     if errors:
-        values = dict(request.form)
+        values = request.form.to_dict()
         return _render_form(values, errors, community, status=400)
 
     contact = data.pop("contact")
