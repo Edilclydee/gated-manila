@@ -8,7 +8,7 @@ OSM data is licensed ODbL: keep the attribution and the per-record source link.
 import json
 import re
 
-from app.constants import CITIES, METRO_BOUNDS
+from app.constants import METRO_BOUNDS, PROVINCES
 from app.osm_geometry import element_to_ring
 from app.validation import validate_geometry
 
@@ -127,25 +127,50 @@ def load_elements(path):
     return payload if isinstance(payload, list) else payload.get("elements", [])
 
 
-def _norm_city(text):
+def _norm(text):
+    """Lower-case, accent-light, and without 'City of' / 'City' so names compare loosely."""
     t = (text or "").lower().strip().replace("ñ", "n")
+    t = re.sub(r"\bsta\.?\s", "santa ", t)
+    t = re.sub(r"\bgen\.?\s", "general ", t)
     if t.startswith("city of "):
         t = t[len("city of "):]
     if t.endswith(" city"):
         t = t[: -len(" city")]
-    return t.strip()
+    return re.sub(r"\s+", " ", t).strip()
 
 
-_CITY_LOOKUP = {_norm_city(c): c for c in CITIES}
+# normalized name -> every (province, city) with that name (a few names repeat, e.g. Santa Maria)
+_PLACE_LOOKUP = {}
+for _province, _cities in PROVINCES.items():
+    for _city in _cities:
+        _PLACE_LOOKUP.setdefault(_norm(_city), []).append((_province, _city))
+
+_PROVINCE_LOOKUP = {_norm(p): p for p in PROVINCES}
+_PROVINCE_LOOKUP.update({"ncr": "Metro Manila", "national capital region": "Metro Manila",
+                         "metropolitan manila": "Metro Manila"})
+_ALIASES = {"montalban": ("Rizal", "Rodriguez"), "rodriguez (montalban)": ("Rizal", "Rodriguez")}
 
 
-def city_from_tags(tags):
-    """Match an OSM address tag to one of our cities, or '' if unsure (the admin then picks)."""
+def place_from_tags(tags):
+    """Match OSM address tags to (province, city). Unsure parts are returned as '' for the admin."""
+    province = ""
+    for key in ("addr:province", "is_in:province", "addr:state"):
+        found = _PROVINCE_LOOKUP.get(_norm(tags.get(key)))
+        if found:
+            province = found
+            break
     for key in ("addr:city", "addr:municipality", "is_in:city"):
-        match = _CITY_LOOKUP.get(_norm_city(tags.get(key)))
-        if match:
-            return match
-    return ""
+        name = _norm(tags.get(key))
+        if not name:
+            continue
+        if name in _ALIASES:
+            return _ALIASES[name]
+        options = _PLACE_LOOKUP.get(name, [])
+        if province:
+            options = [o for o in options if o[0] == province]
+        if len(options) == 1:
+            return options[0]
+    return province, ""
 
 
 def guess_type(name):
@@ -168,7 +193,7 @@ def element_to_submission_data(element):
         return None, reason
     geometry, error = validate_geometry(json.dumps({"type": "Polygon", "coordinates": [ring]}))
     if error:
-        return None, "shape outside Metro Manila or too large"
+        return None, "shape outside the supported area or too large"
 
     alts = []
     for key in ("alt_name", "name:en", "old_name", "official_name"):
@@ -181,13 +206,16 @@ def element_to_submission_data(element):
     note = f"Imported from OpenStreetMap ({ref})."
     if access:
         note += f" OSM access tag: {access}."
-    note += " Verify the city, gating status and boundary before approving."
+    note += " Verify the province, city, gating status and boundary before approving."
+
+    province, city = place_from_tags(tags)
 
     data = {
         "name": name[:200],
         "alt_names": "; ".join(alts)[:300] or None,
         "community_type": guess_type(name),
-        "city": city_from_tags(tags),
+        "province": province,
+        "city": city,
         "barangay": None,
         "gating_status": "open_or_unclear",  # never assumed; the reviewer decides
         "entry_points": None,

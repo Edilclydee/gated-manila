@@ -17,6 +17,7 @@ class Community(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False, index=True)
+    province = db.Column(db.String(60), nullable=False, default="Metro Manila", index=True)
     alt_names = db.Column(db.String(300))
     community_type = db.Column(db.String(30), nullable=False, default="subdivision")
     city = db.Column(db.String(60), nullable=False, index=True)
@@ -47,6 +48,7 @@ class Community(db.Model):
                 "name": self.name,
                 "alt_names": self.alt_names,
                 "type": self.community_type,
+                "province": self.province,
                 "city": self.city,
                 "barangay": self.barangay,
                 "gating_status": self.gating_status,

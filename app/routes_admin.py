@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
 from app.constants import (
-    CITIES, COMMUNITY_TYPES, GATING_LABELS, STATUS_APPROVED, STATUS_PENDING,
+    COMMUNITY_TYPES, GATING_LABELS, STATUS_APPROVED, STATUS_PENDING, province_for_city,
     STATUS_REJECTED, STATUS_UNPUBLISHED,
 )
 from app.extensions import limiter, login_manager
@@ -26,7 +26,7 @@ TYPE_LABELS = {
     "condo_compound": "Condo compound", "other": "Other",
 }
 FIELD_LABELS = {
-    "name": "Name", "alt_names": "Other names", "community_type": "Type", "city": "City",
+    "name": "Name", "alt_names": "Other names", "community_type": "Type", "province": "Province", "city": "City / municipality",
     "barangay": "Barangay", "gating_status": "Gating status", "entry_points": "Entry points",
     "notes": "Notes", "source": "Source",
 }
@@ -96,8 +96,16 @@ def queue():
     return render_template("admin/queue.html", submissions=submissions, status=status, counts=counts)
 
 
+def _with_province(data):
+    """Older submissions have no province; infer it from the city when that is unambiguous."""
+    data = dict(data)
+    if not data.get("province") and data.get("city"):
+        data["province"] = province_for_city(data["city"])
+    return data
+
+
 def _form_values(data):
-    values = dict(data)
+    values = _with_province(data)
     values["geometry"] = json.dumps(data["geometry"]) if data.get("geometry") else ""
     return values
 
@@ -116,7 +124,7 @@ def _diffs(community, proposed):
 
 def _render_review(submission, values, errors, status=200):
     community = submission.community
-    diffs, shape_changed = _diffs(community, submission.data) if community else ([], False)
+    diffs, shape_changed = _diffs(community, _with_province(submission.data)) if community else ([], False)
     lat, lng = current_app.config["MAP_CENTER"]
     page_config = {
         "lat": lat, "lng": lng, "zoom": current_app.config["MAP_ZOOM"],
@@ -128,7 +136,7 @@ def _render_review(submission, values, errors, status=200):
         "admin/review.html",
         submission=submission, community=community, values=values, errors=errors,
         diffs=diffs, shape_changed=shape_changed,
-        cities=CITIES, type_labels=TYPE_LABELS, gating_labels=GATING_LABELS,
+        type_labels=TYPE_LABELS, gating_labels=GATING_LABELS,
         field_labels=FIELD_LABELS, page_config=page_config,
         initial_geometry=values.get("geometry") or "",
     ), status

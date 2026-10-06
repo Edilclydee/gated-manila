@@ -2,7 +2,7 @@ from flask import Blueprint, abort, current_app, redirect, render_template, requ
 
 from app import db
 from app.constants import (
-    CITIES, COMMUNITY_TYPES, GATING_LABELS, STATUS_APPROVED,
+    COMMUNITY_TYPES, GATING_LABELS, STATUS_APPROVED,
 )
 from app.extensions import limiter
 from app.models import Community, Submission
@@ -25,6 +25,7 @@ def _community_values(community):
         "name": community.name,
         "alt_names": community.alt_names or "",
         "community_type": community.community_type,
+        "province": community.province,
         "city": community.city,
         "barangay": community.barangay or "",
         "gating_status": community.gating_status,
@@ -48,7 +49,6 @@ def _render_form(values, errors, community, status=200):
         values=values,
         errors=errors,
         community=community,
-        cities=CITIES,
         type_labels={k: TYPE_LABELS[k] for k in COMMUNITY_TYPES},
         gating_labels=GATING_LABELS,
         site_key=current_app.config["TURNSTILE_SITE_KEY"],

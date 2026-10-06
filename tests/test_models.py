@@ -30,6 +30,7 @@ def test_feature_is_valid_geojson(app):
     assert feature["type"] == "Feature"
     assert feature["geometry"]["type"] == "Point"
     assert feature["properties"]["name"] == "A"
+    assert feature["properties"]["province"] == "Metro Manila"
 
 
 def test_submission_defaults_to_pending_and_roundtrips_data(app):

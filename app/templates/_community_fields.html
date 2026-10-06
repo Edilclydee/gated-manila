@@ -7,16 +7,22 @@
 </label>
 
 <div class="row">
-  <label>City *
-    <select name="city" required>
+  <label>Province *
+    <select name="province" id="province" required>
       <option value="">Choose…</option>
-      {% for c in cities %}<option value="{{ c }}" {{ 'selected' if values.get('city') == c }}>{{ c }}</option>{% endfor %}
+      {% for p in provinces %}<option value="{{ p }}" {{ 'selected' if values.get('province') == p }}>{{ p }}</option>{% endfor %}
     </select>
   </label>
-  <label>Barangay
-    <input type="text" name="barangay" maxlength="100" value="{{ values.get('barangay') or '' }}">
+  <label>City / municipality *
+    <select name="city" id="city" required data-empty-label="Choose…" data-selected="{{ values.get('city') or '' }}">
+      <option value="">Choose a province first…</option>
+      {% if values.get('city') %}<option value="{{ values.get('city') }}" selected>{{ values.get('city') }}</option>{% endif %}
+    </select>
   </label>
 </div>
+<label>Barangay
+  <input type="text" name="barangay" maxlength="100" value="{{ values.get('barangay') or '' }}">
+</label>
 
 <div class="row">
   <label>Type *

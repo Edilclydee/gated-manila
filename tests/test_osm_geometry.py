@@ -7,7 +7,7 @@ import app.osm_import as osm_import
 from app.osm_geometry import element_to_ring, simplify_ring, stitch_rings
 from app.constants import METRO_BOUNDS
 from app.osm_import import (
-    build_query, city_from_tags, element_to_submission_data, guess_type, split_bounds,
+    build_query, element_to_submission_data, guess_type, place_from_tags, split_bounds,
 )
 
 # lng, lat corners of a small square in Quezon City
@@ -74,6 +74,7 @@ def test_valid_way_becomes_submission_data():
         way(123, [P1, P2, P3, P4, P1], name="Sample Village", access="private", **{"addr:city": "Quezon City"}))
     assert reason is None
     assert data["name"] == "Sample Village"
+    assert data["province"] == "Metro Manila"
     assert data["city"] == "Quezon City"
     assert data["community_type"] == "village"
     assert data["gating_status"] == "open_or_unclear"
@@ -84,7 +85,7 @@ def test_valid_way_becomes_submission_data():
 
 def test_unknown_city_left_blank_for_admin():
     data, _ = element_to_submission_data(way(5, [P1, P2, P3, P4, P1], name="X Homes"))
-    assert data["city"] == ""
+    assert data["city"] == "" and data["province"] == ""
 
 
 def test_unnamed_elements_are_skipped():
@@ -98,12 +99,27 @@ def test_shape_outside_metro_manila_is_skipped():
     assert data is None and reason
 
 
-def test_city_matching():
-    assert city_from_tags({"addr:city": "Makati City"}) == "Makati"
-    assert city_from_tags({"addr:city": "City of Manila"}) == "Manila"
-    assert city_from_tags({"addr:city": "Paranaque"}) == "Parañaque"
-    assert city_from_tags({"addr:municipality": "Las Piñas"}) == "Las Piñas"
-    assert city_from_tags({"addr:city": "Cebu City"}) == ""
+def test_place_matching():
+    assert place_from_tags({"addr:city": "Makati City"}) == ("Metro Manila", "Makati")
+    assert place_from_tags({"addr:city": "City of Manila"}) == ("Metro Manila", "Manila")
+    assert place_from_tags({"addr:city": "Paranaque"}) == ("Metro Manila", "Parañaque")
+    assert place_from_tags({"addr:municipality": "Las Piñas"}) == ("Metro Manila", "Las Piñas")
+    assert place_from_tags({"addr:city": "Antipolo City"}) == ("Rizal", "Antipolo")
+    assert place_from_tags({"addr:city": "Dasmarinas"}) == ("Cavite", "Dasmariñas")
+    assert place_from_tags({"addr:city": "Gen. Trias"}) == ("Cavite", "General Trias")
+    assert place_from_tags({"addr:city": "Montalban"}) == ("Rizal", "Rodriguez")
+    assert place_from_tags({"addr:city": "Cebu City"}) == ("", "")
+
+
+def test_ambiguous_city_needs_province_to_resolve():
+    assert place_from_tags({"addr:city": "Santa Maria"}) == ("", "")
+    assert place_from_tags({"addr:city": "Santa Maria", "addr:province": "Bulacan"}) == ("Bulacan", "Santa Maria")
+    assert place_from_tags({"addr:city": "Sta. Maria", "addr:province": "Laguna"}) == ("Laguna", "Santa Maria")
+
+
+def test_province_alone_is_kept_when_city_unknown():
+    assert place_from_tags({"addr:province": "Rizal"}) == ("Rizal", "")
+    assert place_from_tags({"addr:province": "NCR"}) == ("Metro Manila", "")
 
 
 def test_type_guess():

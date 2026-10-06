@@ -18,7 +18,7 @@
         <td>{{ s.id }}</td>
         <td>{{ 'Edit' if s.community_id else ('OSM import' if s.contact == 'Imported from OpenStreetMap' else 'New') }}</td>
         <td>{{ s.data.get('name') }}</td>
-        <td>{{ s.data.get('city') }}</td>
+        <td>{{ s.data.get('city') or '—' }}{% if s.data.get('province') %}, {{ s.data.get('province') }}{% endif %}</td>
         <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
         <td><a href="{{ url_for('admin.review', submission_id=s.id) }}">{{ 'Review' if status == 'pending' else 'View' }}</a></td>
       </tr>

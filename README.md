@@ -1,12 +1,12 @@
 # Gated Manila
 
-A community-sourced map of gated communities and subdivisions in Metro Manila.
+A community-sourced map of gated communities and subdivisions in Metro Manila and nearby provinces (Rizal, Cavite, Bulacan and Laguna).
 Anyone can submit a community or suggest an edit. An admin reviews every submission before it appears on the public map.
 
 **Status:** Phase 1 MVP (map, submissions, admin review, OpenStreetMap import).
 
 ## Features
-- Public map (Leaflet + OpenStreetMap tiles) with city, status and name filters
+- Public map (Leaflet + OpenStreetMap tiles) with searchable province and city filters, plus status and name filters
 - Submission form with polygon drawing or pin drop, protected by Cloudflare Turnstile, a honeypot and rate limiting
 - "Suggest an edit" on any community; edits never change live data until approved
 - Admin login, review queue, edit-before-approve, reject with reason, and unpublish/republish for takedowns
@@ -30,6 +30,10 @@ We use `python -m flask` and `python -m pip` because they avoid blocked `.exe` l
 
 Admin pages live at `/admin/login`.
 
+**Upgrading an older database?** Run `python -m flask --app run init-db` once. It adds the new `province` column and keeps your data (existing entries become Metro Manila). `python run.py` also does this automatically.
+
+**Supported areas:** the provinces and their cities are listed in `PROVINCES` in `app/constants.py`; the area where shapes may be drawn is `REGION_BOUNDS` in the same file. Add a province by editing those two.
+
 ## Useful commands
 
 | Command | What it does |
@@ -44,7 +48,7 @@ Admin pages live at `/admin/login`.
 | `python -m pytest` | Run the tests |
 
 ### About the OpenStreetMap import
-Imported records are **never public automatically**. Each becomes a pending submission with a link back to its OSM element. The importer does not assume a gating status (it is left as "open or unclear") and only fills in the city when the OSM address tag matches one of the 17 Metro Manila cities; otherwise the reviewer picks it. Records you reject are not re-imported.
+Imported records are **never public automatically**. Each becomes a pending submission with a link back to its OSM element. The importer does not assume a gating status (it is left as "open or unclear") and only fills in the province and city when the OSM address tags match a supported city or municipality; otherwise the reviewer picks them. It currently downloads the Metro Manila area and its edges. Records you reject are not re-imported.
 The importer uses the public Overpass API; please be gentle (use `--save` and `--file` rather than re-downloading repeatedly).
 
 ## Configuration

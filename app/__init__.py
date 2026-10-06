@@ -30,6 +30,11 @@ def create_app(config_class=Config):
     def load_admin(user_id):
         return db.session.get(models.Admin, int(user_id))
 
+    @app.context_processor
+    def inject_locations():
+        from app.constants import PROVINCES
+        return {"provinces": list(PROVINCES), "locations": PROVINCES}
+
     from app.routes_admin import bp as admin_bp
     from app.routes_public import bp as public_bp
     from app.routes_submit import bp as submit_bp

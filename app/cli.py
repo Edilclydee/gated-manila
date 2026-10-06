@@ -10,8 +10,10 @@ from app.sample_data import clear_samples, seed_samples
 @with_appcontext
 def init_db_command():
     """Create all database tables."""
-    db.create_all()
-    click.echo("Database initialised.")
+    from app.schema import ensure_schema
+
+    changes = ensure_schema()
+    click.echo("Database initialised." + (f" Updated: {', '.join(changes)}." if changes else ""))
 
 
 @click.command("create-admin")

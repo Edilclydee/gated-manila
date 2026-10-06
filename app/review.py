@@ -8,7 +8,7 @@ from app.constants import (
 from app.models import Community, utcnow
 
 COMMUNITY_FIELDS = [
-    "name", "alt_names", "community_type", "city", "barangay",
+    "name", "alt_names", "community_type", "province", "city", "barangay",
     "gating_status", "entry_points", "notes", "source",
 ]
 

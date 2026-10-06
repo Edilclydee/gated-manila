@@ -3,8 +3,8 @@ import json
 import math
 
 from app.constants import (
-    CITIES, COMMUNITY_TYPES, GATING_STATUSES, MAX_POLYGON_VERTICES,
-    MAX_SHAPE_SPAN_DEG, METRO_BOUNDS,
+    COMMUNITY_TYPES, GATING_STATUSES, MAX_POLYGON_VERTICES,
+    MAX_SHAPE_SPAN_DEG, PROVINCES, REGION_BOUNDS,
 )
 
 
@@ -13,7 +13,7 @@ def _is_number(value):
 
 
 def _in_bounds(lng, lat):
-    lat_min, lng_min, lat_max, lng_max = METRO_BOUNDS
+    lat_min, lng_min, lat_max, lng_max = REGION_BOUNDS
     return lat_min <= lat <= lat_max and lng_min <= lng <= lng_max
 
 
@@ -46,7 +46,7 @@ def validate_geometry(raw):
             return None, "The map shape has invalid coordinates."
         lng, lat = p
         if not _in_bounds(lng, lat):
-            return None, "The shape must be inside Metro Manila."
+            return None, "The shape must be inside the Greater Manila area (Metro Manila, Rizal, Cavite, Bulacan or Laguna)."
         clean.append([round(lng, 6), round(lat, 6)])
 
     if gtype == "Polygon":
@@ -85,7 +85,14 @@ def validate_submission(form):
             errors.append(f"Please choose a valid {label}.")
         data[key] = value
 
-    choice("city", "city", CITIES)
+    province = (form.get("province") or "").strip()
+    city = (form.get("city") or "").strip()
+    if province not in PROVINCES:
+        errors.append("Please choose a valid province.")
+    elif city not in PROVINCES[province]:
+        errors.append(f"Please choose a valid city or municipality in {province}.")
+    data["province"] = province
+    data["city"] = city
     choice("community_type", "type", COMMUNITY_TYPES)
     choice("gating_status", "gating status", GATING_STATUSES)
 

@@ -13,7 +13,7 @@ SQUARE = {
 
 def good_form(**overrides):
     form = {
-        "name": "Test Village", "city": "Marikina", "community_type": "subdivision",
+        "name": "Test Village", "province": "Metro Manila", "city": "Marikina", "community_type": "subdivision",
         "gating_status": "fully_gated", "source": "I live here",
         "geometry": json.dumps(SQUARE), "contact": "me@example.com",
     }
@@ -95,3 +95,16 @@ def test_failed_submission_keeps_typed_values_cleanly(app, turnstile_ok):
     html = resp.get_data(as_text=True)
     assert 'value="Test Village"' in html
     assert "['Test Village']" not in html
+
+
+def test_submission_in_another_province_is_saved(app, turnstile_ok):
+    resp = app.test_client().post("/submit", data=good_form(province="Rizal", city="Antipolo"))
+    assert resp.status_code == 302
+    sub = Submission.query.one()
+    assert sub.data["province"] == "Rizal" and sub.data["city"] == "Antipolo"
+
+
+def test_mismatched_province_and_city_is_rejected(app, turnstile_ok):
+    resp = app.test_client().post("/submit", data=good_form(province="Cavite", city="Makati"))
+    assert resp.status_code == 400
+    assert Submission.query.count() == 0

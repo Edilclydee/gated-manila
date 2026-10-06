@@ -8,6 +8,7 @@
   }).addTo(map);
 
   const searchEl = document.getElementById("search");
+  const provinceEl = document.getElementById("province");
   const cityEl = document.getElementById("city");
   const gatingEl = document.getElementById("gating");
   const countEl = document.getElementById("count");
@@ -29,7 +30,8 @@
   function popupHtml(p) {
     const rows = [];
     const add = (label, value) => { if (value) rows.push(`<dt>${label}:</dt><dd>${esc(value)}</dd>`); };
-    add("City", p.city);
+    add("Province", p.province);
+    add("City / municipality", p.city);
     add("Barangay", p.barangay);
     add("Also known as", p.alt_names);
     add("Entry points", p.entry_points);
@@ -47,6 +49,7 @@
   function matches(f) {
     const p = f.properties;
     const q = searchEl.value.trim().toLowerCase();
+    if (provinceEl.value && p.province !== provinceEl.value) return false;
     if (cityEl.value && p.city !== cityEl.value) return false;
     if (gatingEl.value && p.gating_status !== gatingEl.value) return false;
     if (q) {
@@ -75,6 +78,9 @@
     }
   }
 
+  if (window.initLocationSelects) {
+    window.initLocationSelects(provinceEl, cityEl, { onProvinceChange: () => render(true) });
+  }
   [cityEl, gatingEl].forEach((el) => el.addEventListener("change", () => render(true)));
   searchEl.addEventListener("input", () => render(false));
 

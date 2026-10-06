@@ -2,9 +2,12 @@
 {% block content %}
 <div class="filters">
   <input id="search" type="search" placeholder="Search by name…" aria-label="Search by name">
-  <select id="city" aria-label="Filter by city">
+  <select id="province" aria-label="Filter by province">
+    <option value="">All provinces</option>
+    {% for p in provinces %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+  </select>
+  <select id="city" aria-label="Filter by city" data-empty-label="All cities" disabled>
     <option value="">All cities</option>
-    {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
   </select>
   <select id="gating" aria-label="Filter by gating status">
     <option value="">All statuses</option>
@@ -22,5 +25,6 @@
 
 {% block scripts %}
 <script>window.GM = {{ map_config|tojson }};</script>
+{% include "_location_scripts.html" %}
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}

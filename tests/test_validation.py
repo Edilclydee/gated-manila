@@ -43,18 +43,54 @@ def test_other_geometry_types_rejected():
 
 
 def test_submission_requires_fields_and_valid_choices():
-    data, errors = validate_submission({"city": "Atlantis"})
+    data, errors = validate_submission({"province": "Atlantis", "city": "Atlantis"})
     assert errors
+    assert any("province" in e for e in errors)
     assert any("Name" in e for e in errors)
     assert any("Source" in e for e in errors)
 
 
 def test_valid_submission_has_no_errors():
     form = {
-        "name": "Test Village", "city": "Marikina", "community_type": "subdivision",
+        "name": "Test Village", "province": "Metro Manila", "city": "Marikina", "community_type": "subdivision",
         "gating_status": "fully_gated", "source": "I live here", "entry_points": "2",
         "geometry": json.dumps(SQUARE),
     }
     data, errors = validate_submission(form)
     assert errors == []
     assert data["entry_points"] == 2
+
+
+def valid_form(**overrides):
+    form = {
+        "name": "Test Village", "province": "Metro Manila", "city": "Marikina",
+        "community_type": "subdivision", "gating_status": "fully_gated",
+        "source": "I live here", "geometry": json.dumps(SQUARE),
+    }
+    form.update(overrides)
+    return form
+
+
+def test_city_must_belong_to_the_chosen_province():
+    _, errors = validate_submission(valid_form(province="Rizal", city="Makati"))
+    assert any("Rizal" in e for e in errors)
+
+
+def test_cities_in_other_provinces_are_accepted():
+    for province, city in [("Rizal", "Antipolo"), ("Cavite", "Bacoor"),
+                           ("Bulacan", "Santa Maria"), ("Laguna", "Santa Maria")]:
+        data, errors = validate_submission(valid_form(province=province, city=city))
+        assert errors == [], (province, city, errors)
+        assert data["province"] == province and data["city"] == city
+
+
+def test_province_is_required():
+    _, errors = validate_submission(valid_form(province=""))
+    assert errors
+
+
+def test_shapes_in_nearby_provinces_are_accepted():
+    antipolo = {"type": "Point", "coordinates": [121.176, 14.586]}
+    laguna = {"type": "Point", "coordinates": [121.325, 14.170]}
+    assert geom(antipolo)[1] is None
+    assert geom(laguna)[1] is None

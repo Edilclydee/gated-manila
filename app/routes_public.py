@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, render_template
 
-from app.constants import CITIES, GATING_COLORS, GATING_LABELS
+from app.constants import GATING_COLORS, GATING_LABELS
 from app.models import Community
 
 bp = Blueprint("public", __name__)
@@ -19,7 +19,6 @@ def index():
     return render_template(
         "index.html",
         map_config=map_config,
-        cities=CITIES,
         gating_labels=GATING_LABELS,
         gating_colors=GATING_COLORS,
     )

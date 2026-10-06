@@ -15,7 +15,7 @@ PASSWORD = "correct-horse-battery"
 def sub_data(**overrides):
     data = {
         "name": "New Village", "alt_names": None, "community_type": "subdivision",
-        "city": "Marikina", "barangay": None, "gating_status": "fully_gated",
+        "province": "Metro Manila", "city": "Marikina", "barangay": None, "gating_status": "fully_gated",
         "entry_points": 2, "notes": None, "source": "I live here", "geometry": SQUARE,
     }
     data.update(overrides)
@@ -191,3 +191,23 @@ def test_unpublish_and_republish(app, client):
     assert public_names(app) == []
     client.post(f"/admin/communities/{c.id}/republish")
     assert public_names(app) == ["Existing"]
+
+
+def test_approve_publishes_province_in_public_data(app, client):
+    sub = make_submission(province="Rizal", city="Antipolo")
+    client.post(f"/admin/submission/{sub.id}/approve", data=form_from(sub_data(province="Rizal", city="Antipolo")))
+    feature = app.test_client().get("/api/communities").get_json()["features"][0]
+    assert feature["properties"]["province"] == "Rizal"
+    assert feature["properties"]["city"] == "Antipolo"
+
+
+def test_old_submission_without_province_still_reviewable(app, client):
+    sub = Submission()
+    old = sub_data()
+    del old["province"]
+    sub.data = old  # as created before provinces existed
+    db.session.add(sub)
+    db.session.commit()
+    resp = client.get(f"/admin/submission/{sub.id}")
+    assert resp.status_code == 200
+    assert 'value="Metro Manila" selected' in resp.get_data(as_text=True)

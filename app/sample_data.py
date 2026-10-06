@@ -18,22 +18,25 @@ def _point(lng, lat):
 
 
 SAMPLES = [
-    ("SAMPLE Test Village 1", "Quezon City", "fully_gated", _square(121.044, 14.676), 2),
-    ("SAMPLE Test Village 2", "Marikina", "partially_gated", _square(121.100, 14.650), 3),
-    ("SAMPLE Test Heights", "Makati", "open_or_unclear", _square(121.024, 14.554), None),
-    ("SAMPLE Test Homes", "Taguig", "fully_gated", _square(121.050, 14.520), 1),
-    ("SAMPLE Pin-only Village", "Pasig", "partially_gated", _point(121.080, 14.575), None),
+    ("SAMPLE Test Village 1", "Metro Manila", "Quezon City", "fully_gated", _square(121.044, 14.676), 2),
+    ("SAMPLE Test Village 2", "Metro Manila", "Marikina", "partially_gated", _square(121.100, 14.650), 3),
+    ("SAMPLE Test Heights", "Metro Manila", "Makati", "open_or_unclear", _square(121.024, 14.554), None),
+    ("SAMPLE Test Homes", "Metro Manila", "Taguig", "fully_gated", _square(121.050, 14.520), 1),
+    ("SAMPLE Pin-only Village", "Metro Manila", "Pasig", "partially_gated", _point(121.080, 14.575), None),
+    ("SAMPLE Test Heights (Rizal)", "Rizal", "Antipolo", "partially_gated", _square(121.176, 14.586), 2),
+    ("SAMPLE Test Village (Cavite)", "Cavite", "Bacoor", "fully_gated", _square(120.964, 14.459), 1),
 ]
 
 
 def seed_samples():
     """Insert sample approved communities. Returns how many were added."""
     added = 0
-    for name, city, gating, geom, entries in SAMPLES:
+    for name, province, city, gating, geom, entries in SAMPLES:
         if Community.query.filter_by(name=name).first():
             continue
         db.session.add(Community(
             name=name,
+            province=province,
             city=city,
             community_type="subdivision",
             gating_status=gating,

@@ -3,6 +3,9 @@
   const geometryInput = document.getElementById("geometry");
   const statusEl = document.getElementById("shape-status");
   const form = document.getElementById("submit-form"); // null on read-only pages
+  const provinceEl = document.getElementById("province");
+  const cityEl = document.getElementById("city");
+  if (provinceEl && cityEl && window.initLocationSelects) window.initLocationSelects(provinceEl, cityEl, {});
 
   const map = L.map("draw-map").setView([cfg.lat, cfg.lng], cfg.zoom);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {

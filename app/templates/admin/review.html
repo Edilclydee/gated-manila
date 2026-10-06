@@ -76,6 +76,7 @@
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+{% include "_location_scripts.html" %}
 <script>window.SUB = {{ page_config|tojson }};</script>
 <script src="{{ url_for('static', filename='js/submit.js') }}"></script>
 {% endblock %}
