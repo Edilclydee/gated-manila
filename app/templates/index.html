@@ -1,14 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="filters">
+  <input id="search" type="search" placeholder="Search by name…" aria-label="Search by name">
+  <select id="city" aria-label="Filter by city">
+    <option value="">All cities</option>
+    {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+  </select>
+  <select id="gating" aria-label="Filter by gating status">
+    <option value="">All statuses</option>
+    {% for key, label in gating_labels.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+  </select>
+  <span id="count" class="count"></span>
+  <span class="legend">
+    {% for key, label in gating_labels.items() %}
+      <span class="legend-item"><i style="background: {{ gating_colors[key] }}"></i>{{ label }}</span>
+    {% endfor %}
+  </span>
+</div>
 <div id="map"></div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  const map = L.map("map").setView([{{ center_lat }}, {{ center_lng }}], {{ zoom }});
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-</script>
+<script>window.GM = {{ map_config|tojson }};</script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
 {% endblock %}

@@ -11,6 +11,10 @@ class Config:
     TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
     TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
 
+    # Spam protection: max submissions per visitor (by IP address)
+    SUBMIT_RATE_LIMIT = os.environ.get("SUBMIT_RATE_LIMIT", "5 per hour")
+    RATELIMIT_STORAGE_URI = "memory://"
+
     # Metro Manila view: center and zoom
     MAP_CENTER = (14.5995, 121.0244)
     MAP_ZOOM = 11

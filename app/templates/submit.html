@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Suggest an edit' if community else 'Add a community' }} · Gated Manila{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="submit-page">
+  <div class="submit-layout">
+    <section class="form-col">
+      <h1>{{ 'Suggest an edit' if community else 'Add a community' }}</h1>
+      {% if community %}
+        <p class="note">Editing <strong>{{ community.name }}</strong>. Your changes go to an admin for review; the live entry stays unchanged until approved.</p>
+      {% else %}
+        <p class="note">Submissions are reviewed by an admin before they appear on the map.</p>
+      {% endif %}
+      <p class="note warn">Only share boundaries and public facts. Never include gate codes, guard details, or residents' personal information.</p>
+
+      {% if errors %}
+      <div class="errors" role="alert">
+        <strong>Please fix the following:</strong>
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+
+      <form method="post" id="submit-form" action="{{ url_for('submit.submit', edit=community.id) if community else url_for('submit.submit') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="geometry" id="geometry" value="{{ initial_geometry }}">
+        <div class="hp" aria-hidden="true">
+          <label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+
+        <label>Name *
+          <input type="text" name="name" maxlength="200" required value="{{ values.get('name', '') }}">
+        </label>
+        <label>Other names
+          <input type="text" name="alt_names" maxlength="300" value="{{ values.get('alt_names', '') }}">
+        </label>
+
+        <div class="row">
+          <label>City *
+            <select name="city" required>
+              <option value="">Choose…</option>
+              {% for c in cities %}<option value="{{ c }}" {{ 'selected' if values.get('city') == c }}>{{ c }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Barangay
+            <input type="text" name="barangay" maxlength="100" value="{{ values.get('barangay', '') }}">
+          </label>
+        </div>
+
+        <div class="row">
+          <label>Type *
+            <select name="community_type" required>
+              {% for key, label in type_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('community_type') == key }}>{{ label }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Gating status *
+            <select name="gating_status" required>
+              {% for key, label in gating_labels.items() %}<option value="{{ key }}" {{ 'selected' if values.get('gating_status') == key }}>{{ label }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>Entry points
+            <input type="number" name="entry_points" min="0" max="50" value="{{ values.get('entry_points', '') }}">
+          </label>
+        </div>
+
+        <label>Notes
+          <textarea name="notes" rows="3" maxlength="1000">{{ values.get('notes', '') }}</textarea>
+        </label>
+        <label>Source or evidence *
+          <input type="text" name="source" maxlength="500" required value="{{ values.get('source', '') }}"
+                 placeholder="Photo link, OSM link, or “I live here”">
+        </label>
+        <label>Your contact (optional, never shown publicly)
+          <input type="text" name="contact" maxlength="200" value="{{ values.get('contact', '') }}">
+        </label>
+
+        <div class="cf-turnstile" data-sitekey="{{ site_key }}"></div>
+        <button type="submit" class="btn">Submit for review</button>
+      </form>
+    </section>
+
+    <section class="map-col">
+      <p class="note"><strong>Step 1:</strong> use the tools at the top-left of the map to draw the boundary (polygon) or drop a pin. Grey shapes are communities already on the map.</p>
+      <div id="draw-map"></div>
+      <p id="shape-status" class="note">No shape drawn yet.</p>
+    </section>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script>window.SUB = {{ page_config|tojson }};</script>
+<script src="{{ url_for('static', filename='js/submit.js') }}"></script>
+{% endblock %}
